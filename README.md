@@ -1,6 +1,4 @@
-<div align="center">
-  <img src="https://res.cloudinary.com/du94mex28/image/upload/v1697795732/sonus/sonus-full-fa2_j4vaxr.png" alt="Sonus Logo" width="350">
-</div>
+![Sonus Logo](https://res.cloudinary.com/du94mex28/image/upload/v1697795732/sonus/sonus-full-fa2_j4vaxr.png)
 
 # Sonus Backend
 
