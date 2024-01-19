@@ -1,0 +1,136 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "./generated/mongodb_client"
+  binaryTargets = ["native", "darwin-arm64"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGO_DB_URI")
+}
+
+model User {
+  id             String          @id @default(auto()) @map("_id") @db.ObjectId
+  email          String          @unique
+  name           String
+  password       String
+  avatar         String
+  Song           Song[]
+  LikedSong      LikedSong[]
+  LikedAlbums    LikedAlbums[]
+  Playlist       Playlist[]
+  LikedPlaylist  LikedPlaylist[]
+  followedUserId String[]        @db.ObjectId
+  FollowedUser   FollowedUser[]  @relation(fields: [followedUserId], references: [id])
+  followedById   String[]        @db.ObjectId
+  FollowedBy     FollowedBy[]    @relation(fields: [followedById], references: [id])
+}
+
+model Song {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  url        String
+  cover      String
+  name       String
+  duration   String?
+  listened   Int?
+  artistId   String[]    @db.ObjectId
+  Artist     Artist[]    @relation(fields: [artistId], references: [id])
+  albumId    String[]    @db.ObjectId
+  Album      Albums[]    @relation(fields: [albumId], references: [id])
+  genreId    String[]    @db.ObjectId
+  Genres     Genres[]    @relation(fields: [genreId], references: [id])
+  userId     String?     @db.ObjectId
+  User       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  LikedSong  LikedSong[]
+  playlistId String[]    @db.ObjectId
+  Playlist   Playlist[]  @relation(fields: [playlistId], references: [id])
+}
+
+model Artist {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  img      String
+  songId   String[] @db.ObjectId
+  Song     Song[]   @relation(fields: [songId], references: [id])
+  albumsId String[] @db.ObjectId
+  Albums   Albums[] @relation(fields: [albumsId], references: [id])
+  genreId  String[] @db.ObjectId
+  Genres   Genres[] @relation(fields: [genreId], references: [id])
+}
+
+model Albums {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  cover       String
+  LikedAlbums LikedAlbums[]
+  songId      String[]      @db.ObjectId
+  Song        Song[]        @relation(fields: [songId], references: [id])
+  artistId    String[]      @db.ObjectId
+  Artist      Artist[]      @relation(fields: [artistId], references: [id])
+  genreId     String[]      @db.ObjectId
+  Genres      Genres[]      @relation(fields: [genreId], references: [id])
+}
+
+model LikedSong {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  liked  Boolean
+  userId String? @db.ObjectId
+  User   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  songId String? @db.ObjectId
+  Song   Song?   @relation(fields: [songId], references: [id])
+}
+
+model LikedAlbums {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  liked   Boolean
+  userId  String? @db.ObjectId
+  User    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  albumId String? @db.ObjectId
+  Albums  Albums? @relation(fields: [albumId], references: [id])
+}
+
+model LikedPlaylist {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  liked      Boolean
+  userId     String?   @db.ObjectId
+  User       User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlistId String?   @db.ObjectId
+  Playlists  Playlist? @relation(fields: [playlistId], references: [id])
+}
+
+model Genres {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  name     String   @unique
+  songId   String[] @db.ObjectId
+  Song     Song[]   @relation(fields: [songId], references: [id])
+  artistId String[] @db.ObjectId
+  Artist   Artist[] @relation(fields: [artistId], references: [id])
+  albumId  String[] @db.ObjectId
+  Albums   Albums[] @relation(fields: [albumId], references: [id])
+}
+
+model Playlist {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  cover         String
+  numSong       Int?
+  songId        String[]        @db.ObjectId
+  Song          Song[]          @relation(fields: [songId], references: [id])
+  userId        String?         @db.ObjectId
+  User          User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  LikedPlaylist LikedPlaylist[]
+}
+
+model FollowedUser {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String[] @db.ObjectId
+  followed Boolean
+  User     User[]   @relation(fields: [userId], references: [id])
+}
+
+model FollowedBy {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String[] @db.ObjectId
+  followed Boolean
+  User     User[]   @relation(fields: [userId], references: [id])
+}
