@@ -5,9 +5,3 @@ import { DefaultArgs } from "@prisma/client/runtime/library";
 type ClientMongo = MongoClient<Prisma.PrismaClientOptions, never, DefaultArgs>
 
 export const mongoClient: ClientMongo = new MongoClient();
-
-// import { PrismaClient } from "@prisma/client"
-
-// const prisma = new PrismaClient()
-
-// export default prisma
