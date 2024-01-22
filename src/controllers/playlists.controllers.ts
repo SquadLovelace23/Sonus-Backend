@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { mongoClient } from '../db/client';
+import mongoClient from '../db/client';
 
 export const createPlaylist = async (req: Request, res: Response) => {
     const { name, cover } = req.body;
