@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 // import { mongoClient } from '../db/client';
-import {prisma} from "../db/client";
+import prisma from "../db/client";
 
 export const createSong = async (req: Request, res: Response) => {
     const { name, url, cover, genresId, artistId, albumId } = req.body;
