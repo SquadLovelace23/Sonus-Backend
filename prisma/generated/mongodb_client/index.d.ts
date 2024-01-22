@@ -325,7 +325,7 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 5.6.0
+   * Prisma Client JS version: 5.8.1
    * Query Engine version: e95e739751f42d8ca026f6b910f5a2dc5adeaeee
    */
   export type PrismaVersion = {
@@ -2402,7 +2402,7 @@ export namespace Prisma {
   type UserGetPayload<S extends boolean | null | undefined | UserDefaultArgs> = $Result.GetResult<Prisma.$UserPayload, S>
 
   type UserCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<UserFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<UserFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: UserCountAggregateInputType | true
     }
 
@@ -3632,7 +3632,7 @@ export namespace Prisma {
   type SongGetPayload<S extends boolean | null | undefined | SongDefaultArgs> = $Result.GetResult<Prisma.$SongPayload, S>
 
   type SongCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<SongFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<SongFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: SongCountAggregateInputType | true
     }
 
@@ -4749,7 +4749,7 @@ export namespace Prisma {
   type ArtistGetPayload<S extends boolean | null | undefined | ArtistDefaultArgs> = $Result.GetResult<Prisma.$ArtistPayload, S>
 
   type ArtistCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<ArtistFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<ArtistFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: ArtistCountAggregateInputType | true
     }
 
@@ -5800,7 +5800,7 @@ export namespace Prisma {
   type AlbumsGetPayload<S extends boolean | null | undefined | AlbumsDefaultArgs> = $Result.GetResult<Prisma.$AlbumsPayload, S>
 
   type AlbumsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<AlbumsFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<AlbumsFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: AlbumsCountAggregateInputType | true
     }
 
@@ -6858,7 +6858,7 @@ export namespace Prisma {
   type LikedSongGetPayload<S extends boolean | null | undefined | LikedSongDefaultArgs> = $Result.GetResult<Prisma.$LikedSongPayload, S>
 
   type LikedSongCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<LikedSongFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<LikedSongFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: LikedSongCountAggregateInputType | true
     }
 
@@ -7858,7 +7858,7 @@ export namespace Prisma {
   type LikedAlbumsGetPayload<S extends boolean | null | undefined | LikedAlbumsDefaultArgs> = $Result.GetResult<Prisma.$LikedAlbumsPayload, S>
 
   type LikedAlbumsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<LikedAlbumsFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<LikedAlbumsFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: LikedAlbumsCountAggregateInputType | true
     }
 
@@ -8858,7 +8858,7 @@ export namespace Prisma {
   type LikedPlaylistGetPayload<S extends boolean | null | undefined | LikedPlaylistDefaultArgs> = $Result.GetResult<Prisma.$LikedPlaylistPayload, S>
 
   type LikedPlaylistCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<LikedPlaylistFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<LikedPlaylistFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: LikedPlaylistCountAggregateInputType | true
     }
 
@@ -9861,7 +9861,7 @@ export namespace Prisma {
   type GenresGetPayload<S extends boolean | null | undefined | GenresDefaultArgs> = $Result.GetResult<Prisma.$GenresPayload, S>
 
   type GenresCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<GenresFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<GenresFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: GenresCountAggregateInputType | true
     }
 
@@ -10950,7 +10950,7 @@ export namespace Prisma {
   type PlaylistGetPayload<S extends boolean | null | undefined | PlaylistDefaultArgs> = $Result.GetResult<Prisma.$PlaylistPayload, S>
 
   type PlaylistCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<PlaylistFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<PlaylistFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: PlaylistCountAggregateInputType | true
     }
 
@@ -11965,7 +11965,7 @@ export namespace Prisma {
   type FollowedUserGetPayload<S extends boolean | null | undefined | FollowedUserDefaultArgs> = $Result.GetResult<Prisma.$FollowedUserPayload, S>
 
   type FollowedUserCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<FollowedUserFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<FollowedUserFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: FollowedUserCountAggregateInputType | true
     }
 
@@ -12936,7 +12936,7 @@ export namespace Prisma {
   type FollowedByGetPayload<S extends boolean | null | undefined | FollowedByDefaultArgs> = $Result.GetResult<Prisma.$FollowedByPayload, S>
 
   type FollowedByCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
-    Omit<FollowedByFindManyArgs, 'select' | 'include' | 'distinct' > & {
+    Omit<FollowedByFindManyArgs, 'select' | 'include' | 'distinct'> & {
       select?: FollowedByCountAggregateInputType | true
     }
 

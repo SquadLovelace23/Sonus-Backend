@@ -1,5 +1,7 @@
 import { PrismaClient as MongoClient } from "../../prisma/generated/mongodb_client"
+import { Prisma } from '../../prisma/generated/mongodb_client';
+import { DefaultArgs } from "@prisma/client/runtime/library";
 
-const mongoClient = new MongoClient()
+type ClientMongo = MongoClient<Prisma.PrismaClientOptions, never, DefaultArgs>
 
-export default mongoClient
+export const mongoClient: ClientMongo = new MongoClient();

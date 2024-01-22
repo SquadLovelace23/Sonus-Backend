@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import mongoClient from '../db/client';
+import { mongoClient } from '../db/client';
 
 export const getAllUsers = async (req: Request, res: Response) => {
     try {

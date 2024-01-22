@@ -79,7 +79,7 @@ declare type BatchQueryOptionsCbArgs = {
 };
 
 declare type BatchTransactionOptions = {
-    isolationLevel?: Transaction.IsolationLevel;
+    isolationLevel?: Transaction_2.IsolationLevel;
 };
 
 declare interface BinaryTargetsEnvValue {
@@ -163,6 +163,10 @@ declare type ComputedField = {
 
 declare type ComputedFieldsMap = {
     [fieldName: string]: ComputedField;
+};
+
+declare type ConnectionInfo = {
+    schemaName?: string;
 };
 
 declare interface Context {
@@ -554,6 +558,27 @@ declare function defineExtension(ext: ExtensionArgs | ((client: Client) => Clien
 
 declare const denylist: readonly ["$connect", "$disconnect", "$on", "$transaction", "$use", "$extends"];
 
+/**
+ * Detect the current JavaScript runtime following
+ * the WinterCG Runtime Keys proposal:
+ *
+ * - `edge-routine` Alibaba Cloud Edge Routine
+ * - `workerd` Cloudflare Workers
+ * - `deno` Deno and Deno Deploy
+ * - `lagon` Lagon
+ * - `react-native` React Native
+ * - `netlify` Netlify Edge Functions
+ * - `electron` Electron
+ * - `node` Node.js
+ * - `bun` Bun
+ * - `edge-light` Vercel Edge Functions
+ * - `fastly` Fastly Compute@Edge
+ *
+ * @see https://runtime-keys.proposal.wintercg.org/
+ * @returns {Runtime}
+ */
+export declare function detectRuntime(): Runtime;
+
 export declare type DevTypeMapDef = {
     meta: {
         modelProps: string;
@@ -574,13 +599,13 @@ export declare type DevTypeMapFnDef = {
     payload: OperationPayload;
 };
 
-declare interface Dictionary<T> {
-    [key: string]: T;
-}
-
-declare type Dictionary_2<T> = {
+declare type Dictionary<T> = {
     [key: string]: T | undefined;
 };
+
+declare interface Dictionary_2<T> {
+    [key: string]: T;
+}
 
 export declare namespace DMMF {
     export interface Document {
@@ -794,10 +819,10 @@ export declare class DMMFClass implements DMMF.Document {
     document: DMMF.Document;
     private compositeNames;
     private inputTypesByName;
-    readonly typeAndModelMap: Dictionary<DMMF.Model>;
-    readonly mappingsMap: Dictionary<DMMF.ModelMapping>;
+    readonly typeAndModelMap: Dictionary_2<DMMF.Model>;
+    readonly mappingsMap: Dictionary_2<DMMF.ModelMapping>;
     readonly outputTypeMap: NamespacedTypeMap<DMMF.OutputType>;
-    readonly rootFieldMap: Dictionary<DMMF.SchemaField>;
+    readonly rootFieldMap: Dictionary_2<DMMF.SchemaField>;
     constructor(document: DMMF.Document);
     get datamodel(): DMMF.Datamodel;
     get mappings(): DMMF.Mappings;
@@ -828,11 +853,11 @@ export declare interface DriverAdapter extends Queryable {
     /**
      * Starts new transation.
      */
-    startTransaction(): Promise<Result_3<Transaction_2>>;
+    startTransaction(): Promise<Result_4<Transaction>>;
     /**
-     * Closes the connection to the database, if any.
+     * Optional method that returns extra connection info
      */
-    close: () => Promise<Result_3<void>>;
+    getConnectionInfo?(): Result_4<ConnectionInfo>;
 }
 
 /** Client */
@@ -981,15 +1006,15 @@ export declare const empty: Sql;
 export declare type EmptyToUnknown<T> = T;
 
 declare abstract class Engine<InteractiveTransactionPayload = unknown> {
-    abstract on(event: EngineEventType, listener: (args?: any) => any): void;
+    abstract onBeforeExit(callback: () => Promise<void>): void;
     abstract start(): Promise<void>;
     abstract stop(): Promise<void>;
     abstract version(forceRun?: boolean): Promise<string> | string;
-    abstract request<T>(query: JsonQuery, options: RequestOptions<InteractiveTransactionPayload>): Promise<QueryEngineResult<T>>;
+    abstract request<T>(query: JsonQuery, options: RequestOptions_2<InteractiveTransactionPayload>): Promise<QueryEngineResult<T>>;
     abstract requestBatch<T>(queries: JsonQuery[], options: RequestBatchOptions<InteractiveTransactionPayload>): Promise<BatchQueryEngineResult<T>[]>;
-    abstract transaction(action: 'start', headers: Transaction.TransactionHeaders, options?: Transaction.Options): Promise<Transaction.InteractiveTransactionInfo<unknown>>;
-    abstract transaction(action: 'commit', headers: Transaction.TransactionHeaders, info: Transaction.InteractiveTransactionInfo<unknown>): Promise<void>;
-    abstract transaction(action: 'rollback', headers: Transaction.TransactionHeaders, info: Transaction.InteractiveTransactionInfo<unknown>): Promise<void>;
+    abstract transaction(action: 'start', headers: Transaction_2.TransactionHeaders, options?: Transaction_2.Options): Promise<Transaction_2.InteractiveTransactionInfo<unknown>>;
+    abstract transaction(action: 'commit', headers: Transaction_2.TransactionHeaders, info: Transaction_2.InteractiveTransactionInfo<unknown>): Promise<void>;
+    abstract transaction(action: 'rollback', headers: Transaction_2.TransactionHeaders, info: Transaction_2.InteractiveTransactionInfo<unknown>): Promise<void>;
     abstract metrics(options: MetricsOptionsJson): Promise<Metrics>;
     abstract metrics(options: MetricsOptionsPrometheus): Promise<string>;
 }
@@ -1013,7 +1038,7 @@ declare interface EngineConfig {
     previewFeatures?: string[];
     engineEndpoint?: string;
     activeProvider?: string;
-    logEmitter: EventEmitter;
+    logEmitter: LogEmitter;
     /**
      * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-planetscale`.
      * If set, this is only used in the library engine, and all queries would be performed through it,
@@ -1055,7 +1080,9 @@ declare interface EngineConfig {
     getQueryEngineWasmModule?: () => Promise<unknown>;
 }
 
-declare type EngineEventType = 'query' | 'info' | 'warn' | 'error' | 'beforeExit';
+declare type EngineEvent<E extends EngineEventType> = E extends QueryEventType ? QueryEvent : LogEvent;
+
+declare type EngineEventType = QueryEventType | LogEventType;
 
 declare type EngineSpan = {
     span: boolean;
@@ -1130,10 +1157,7 @@ declare interface ErrorWithBatchIndex {
     batchRequestIdx?: number;
 }
 
-declare interface EventEmitter {
-    on(event: string, listener: (...args: any[]) => void): unknown;
-    emit(event: string, args?: any): boolean;
-}
+declare type EventCallback<E extends ExtendedEventType> = [E] extends ['beforeExit'] ? () => Promise<void> : [E] extends [LogLevel] ? (event: EngineEvent<E>) => void : never;
 
 export declare type Exact<A, W> = (A extends unknown ? (W extends A ? {
     [K in keyof A]: Exact<A[K], W[K]>;
@@ -1166,6 +1190,8 @@ declare interface ExceptionWithName {
     name: string;
     stack?: string;
 }
+
+declare type ExtendedEventType = LogLevel | 'beforeExit';
 
 declare type ExtendedSpanOptions = SpanOptions & {
     /** The name of the span */
@@ -1283,7 +1309,7 @@ declare interface GeneratorConfig {
     output: EnvValue | null;
     isCustomOutput?: boolean;
     provider: EnvValue;
-    config: Dictionary_2<string | string[]>;
+    config: Dictionary<string | string[]>;
     binaryTargets: BinaryTargetsEnvValue[];
     previewFeatures: string[];
 }
@@ -1361,7 +1387,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
          * @param middleware to hook
          */
         $use(middleware: QueryMiddleware): void;
-        $on(eventType: EngineEventType, callback: (event: any) => void): void;
+        $on<E extends ExtendedEventType>(eventType: E, callback: EventCallback<E>): void;
         $connect(): Promise<void>;
         /**
          * Disconnect from the database
@@ -1435,7 +1461,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
          */
         _transactionWithCallback({ callback, options, }: {
             callback: (client: Client) => Promise<unknown>;
-            options?: Options_2 | undefined;
+            options?: Options | undefined;
         }): Promise<unknown>;
         _createItxClient(transaction: PrismaPromiseInteractiveTransaction): Client;
         /**
@@ -1580,6 +1606,7 @@ declare type HandleErrorParams = {
     clientMethod: string;
     callsite?: CallSite;
     transaction?: PrismaPromiseTransaction;
+    modelName?: string;
 };
 
 /**
@@ -1609,7 +1636,7 @@ declare type InteractiveTransactionInfo<Payload = unknown> = {
     payload: Payload;
 };
 
-declare type InteractiveTransactionOptions<Payload> = Transaction.InteractiveTransactionInfo<Payload>;
+declare type InteractiveTransactionOptions<Payload> = Transaction_2.InteractiveTransactionInfo<Payload>;
 
 export declare type InternalArgs<R = {
     [K in string]: {
@@ -1804,6 +1831,20 @@ declare type LogDefinition = {
     emit: 'stdout' | 'event';
 };
 
+declare type LogEmitter = {
+    on<E extends EngineEventType>(event: E, listener: (event: EngineEvent<E>) => void): LogEmitter;
+    emit(event: QueryEventType, payload: QueryEvent): void;
+    emit(event: LogEventType, payload: LogEvent): void;
+};
+
+declare type LogEvent = {
+    timestamp: Date;
+    message: string;
+    target: string;
+};
+
+declare type LogEventType = 'info' | 'warn' | 'error';
+
 declare type LogLevel = 'info' | 'query' | 'warn' | 'error';
 
 /**
@@ -1969,7 +2010,7 @@ export declare type NeverToUnknown<T> = [T] extends [never] ? unknown : T;
  * @param options
  * @returns
  */
-declare function nodeFetch(url: string, options?: RequestOptions_2): Promise<RequestResponse>;
+declare function nodeFetch(url: string, options?: RequestOptions): Promise<RequestResponse>;
 
 declare class NodeHeaders {
     readonly headers: Map<string, string>;
@@ -2057,18 +2098,18 @@ export declare type OptionalKeys<O> = {
     [K in keyof O]-?: {} extends Pick_2<O, K> ? K : never;
 }[keyof O];
 
-declare type Options = {
-    clientVersion: string;
-};
-
 /**
  * maxWait ?= 2000
  * timeout ?= 5000
  */
-declare type Options_2 = {
+declare type Options = {
     maxWait?: number;
     timeout?: number;
     isolationLevel?: IsolationLevel;
+};
+
+declare type Options_2 = {
+    clientVersion: string;
 };
 
 export declare type Or<A extends 1 | 0, B extends 1 | 0> = {
@@ -2184,7 +2225,7 @@ export declare class PrismaClientUnknownRequestError extends Error implements Er
 export declare class PrismaClientValidationError extends Error {
     name: string;
     clientVersion: string;
-    constructor(message: string, { clientVersion }: Options);
+    constructor(message: string, { clientVersion }: Options_2);
     get [Symbol.toStringTag](): string;
 }
 
@@ -2277,14 +2318,14 @@ declare type Query = {
 };
 
 declare interface Queryable {
-    readonly flavour: 'mysql' | 'postgres' | 'sqlite';
+    readonly provider: 'mysql' | 'postgres' | 'sqlite';
     /**
      * Execute a query given as SQL, interpolating the given parameters,
      * and returning the type-aware result set of the query.
      *
      * This is the preferred way of executing `SELECT` queries.
      */
-    queryRaw(params: Query): Promise<Result_3<ResultSet>>;
+    queryRaw(params: Query): Promise<Result_4<ResultSet>>;
     /**
      * Execute a query given as SQL, interpolating the given parameters,
      * and returning the number of affected rows.
@@ -2292,13 +2333,23 @@ declare interface Queryable {
      * This is the preferred way of executing `INSERT`, `UPDATE`, `DELETE` queries,
      * as well as transactional queries.
      */
-    executeRaw(params: Query): Promise<Result_3<number>>;
+    executeRaw(params: Query): Promise<Result_4<number>>;
 }
 
 declare type QueryEngineResult<T> = {
     data: T;
     elapsed: number;
 };
+
+declare type QueryEvent = {
+    timestamp: Date;
+    query: string;
+    params: string;
+    duration: number;
+    target: string;
+};
+
+declare type QueryEventType = 'query';
 
 declare type QueryMiddleware = (params: QueryMiddlewareParams, next: (params: QueryMiddlewareParams) => Promise<unknown>) => Promise<unknown>;
 
@@ -2362,7 +2413,7 @@ export declare type RenameAndNestPayloadKeys<P> = {
 };
 
 declare type RequestBatchOptions<InteractiveTransactionPayload> = {
-    transaction?: TransactionOptions<InteractiveTransactionPayload>;
+    transaction?: TransactionOptions_2<InteractiveTransactionPayload>;
     traceparent?: string;
     numTry?: number;
     containsWrite: boolean;
@@ -2373,7 +2424,7 @@ declare class RequestHandler {
     client: Client;
     dataloader: DataLoader<RequestParams>;
     private logEmitter?;
-    constructor(client: Client, logEmitter?: EventEmitter);
+    constructor(client: Client, logEmitter?: LogEmitter);
     request(params: RequestParams): Promise<any>;
     mapQueryEngineResult({ dataPath, unpacker }: RequestParams, response: QueryEngineResult<any>): any;
     /**
@@ -2381,24 +2432,24 @@ declare class RequestHandler {
      * handlers to finish.
      */
     handleAndLogRequestError(params: HandleErrorParams): never;
-    handleRequestError({ error, clientMethod, callsite, transaction, args }: HandleErrorParams): never;
+    handleRequestError({ error, clientMethod, callsite, transaction, args, modelName }: HandleErrorParams): never;
     sanitizeMessage(message: any): any;
     unpack(data: unknown, dataPath: string[], unpacker?: Unpacker): any;
     get [Symbol.toStringTag](): string;
 }
 
-declare type RequestOptions<InteractiveTransactionPayload> = {
+declare type RequestOptions = {
+    method?: string;
+    headers?: Record<string, string>;
+    body?: string;
+};
+
+declare type RequestOptions_2<InteractiveTransactionPayload> = {
     traceparent?: string;
     numTry?: number;
     interactiveTransaction?: InteractiveTransactionOptions<InteractiveTransactionPayload>;
     isWrite: boolean;
     customDataProxyFetch?: (fetch: Fetch) => Fetch;
-};
-
-declare type RequestOptions_2 = {
-    method?: string;
-    headers?: Record<string, string>;
-    body?: string;
 };
 
 declare type RequestParams = {
@@ -2450,18 +2501,7 @@ export declare type Result<T, A, F extends Operation> = T extends {
 
 export declare type Result_2<T, A, F extends Operation> = Result<T, A, F>;
 
-declare type Result_3<T> = {
-    map<U>(fn: (value: T) => U): Result_3<U>;
-    flatMap<U>(fn: (value: T) => Result_3<U>): Result_3<U>;
-} & ({
-    readonly ok: true;
-    readonly value: T;
-} | {
-    readonly ok: false;
-    readonly error: Error_2;
-});
-
-declare namespace Result_4 {
+declare namespace Result_3 {
     export {
         Operation,
         FluentOperation,
@@ -2479,6 +2519,17 @@ declare namespace Result_4 {
         GetResult
     }
 }
+
+declare type Result_4<T> = {
+    map<U>(fn: (value: T) => U): Result_4<U>;
+    flatMap<U>(fn: (value: T) => Result_4<U>): Result_4<U>;
+} & ({
+    readonly ok: true;
+    readonly value: T;
+} | {
+    readonly ok: false;
+    readonly error: Error_2;
+});
 
 export declare type ResultArg = {
     [FieldName in string]: ResultFieldDefinition;
@@ -2522,6 +2573,8 @@ declare interface ResultSet {
 }
 
 export declare type Return<T> = T extends (...args: any[]) => infer R ? R : T;
+
+declare type Runtime = "edge-routine" | "workerd" | "deno" | "lagon" | "react-native" | "netlify" | "electron" | "node" | "bun" | "edge-light" | "fastly" | "unknown";
 
 declare type RuntimeDataModel = {
     readonly models: Record<string, RuntimeModel>;
@@ -2795,6 +2848,7 @@ export declare class Sql {
     constructor(rawStrings: readonly string[], rawValues: readonly RawValue[]);
     get text(): string;
     get sql(): string;
+    get statement(): string;
     inspect(): {
         text: string;
         sql: string;
@@ -2862,51 +2916,44 @@ declare interface TracingHelper {
     runInChildSpan<R>(nameOrOptions: string | ExtendedSpanOptions, callback: SpanCallback<R>): R;
 }
 
-declare namespace Transaction {
-    export {
-        IsolationLevel,
-        Options_2 as Options,
-        InteractiveTransactionInfo,
-        TransactionHeaders
-    }
-}
-
-declare interface Transaction_2 extends Queryable {
+declare interface Transaction extends Queryable {
     /**
      * Transaction options.
      */
-    readonly options: TransactionOptions_2;
+    readonly options: TransactionOptions;
     /**
      * Commit the transaction.
      */
-    commit(): Promise<Result_3<void>>;
+    commit(): Promise<Result_4<void>>;
     /**
      * Rolls back the transaction.
      */
-    rollback(): Promise<Result_3<void>>;
-    /**
-     * Discards and closes the transaction which may or may not have been committed or rolled back.
-     * This operation must be synchronous. If the implementation requires calling creating new
-     * asynchronous tasks on the event loop, the driver is responsible for handling the errors
-     * appropriately to ensure they don't crash the application.
-     */
-    dispose(): Result_3<void>;
+    rollback(): Promise<Result_4<void>>;
+}
+
+declare namespace Transaction_2 {
+    export {
+        IsolationLevel,
+        Options,
+        InteractiveTransactionInfo,
+        TransactionHeaders
+    }
 }
 
 declare type TransactionHeaders = {
     traceparent?: string;
 };
 
-declare type TransactionOptions<InteractiveTransactionPayload> = {
+declare type TransactionOptions = {
+    usePhantomQuery: boolean;
+};
+
+declare type TransactionOptions_2<InteractiveTransactionPayload> = {
     kind: 'itx';
     options: InteractiveTransactionOptions<InteractiveTransactionPayload>;
 } | {
     kind: 'batch';
     options: BatchTransactionOptions;
-};
-
-declare type TransactionOptions_2 = {
-    usePhantomQuery: boolean;
 };
 
 export declare type TypeMapCbDef = Fn<{
@@ -2918,7 +2965,7 @@ export declare type TypeMapDef = Record<any, any>;
 
 declare namespace Types {
     export {
-        Result_4 as Result,
+        Result_3 as Result,
         Extensions_2 as Extensions,
         Utils,
         Public_2 as Public,

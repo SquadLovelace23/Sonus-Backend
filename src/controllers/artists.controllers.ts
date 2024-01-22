@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import mongoClient from '../db/client';
+import { mongoClient } from '../db/client';
 
 export const createArtist = async (req: Request, res: Response) => {
     const { name, img, songId, albumsId, genresId } = req.body;
