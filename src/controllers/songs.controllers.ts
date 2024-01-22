@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import { mongoClient } from '../db/client';
+// import { mongoClient } from '../db/client';
+import prisma from "../db/client";
 
 export const createSong = async (req: Request, res: Response) => {
     const { name, url, cover, genresId, artistId, albumId } = req.body;
 
     try {
-        const newSong = await mongoClient.song.create({
+        const newSong = await prisma.song.create({
             data: {
                 name,
                 url,
@@ -23,7 +24,7 @@ export const createSong = async (req: Request, res: Response) => {
 
 export const getAllSongs = async (req: Request, res: Response) => {
     try {
-        const allSongs = await mongoClient.song.findMany({
+        const allSongs = await prisma.song.findMany({
             include: {
                 Artist: true,
                 Album: true,
@@ -40,7 +41,7 @@ export const getSongById = async (req: Request, res: Response) => {
     const { songId } = req.params
 
     try {
-        const song = await mongoClient.song.findUnique({
+        const song = await prisma.song.findUnique({
             where: {
                 id: songId
             }
@@ -56,7 +57,7 @@ export const getSongByArtist = async (req: Request, res: Response) => {
     const { artistId } = req.params;
 
     try {
-        const songs = await mongoClient.song.findMany({
+        const songs = await prisma.song.findMany({
             where: {
                 Artist: {
                     some: {
@@ -83,7 +84,7 @@ export const getSongByGenre = async (req: Request, res: Response) => {
     const { genreId } = req.params;
 
     try {
-        const songs = await mongoClient.song.findMany({
+        const songs = await prisma.song.findMany({
             where: {
                 Genres: {
                     some: {
@@ -109,7 +110,7 @@ export const getSongByPlaylist = async (req: Request, res: Response) => {
     const { playlistId } = req.params;
 
     try {
-        const songs = await mongoClient.song.findMany({
+        const songs = await prisma.song.findMany({
             where: {
                 Playlist: {
                     some: {
@@ -133,7 +134,7 @@ export const getSongByUserId = async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     try {
-        const songs = await mongoClient.song.findMany({
+        const songs = await prisma.song.findMany({
             where: { id: userId }
         });
         res.status(200).json(songs);
@@ -146,7 +147,7 @@ export const getSongByAlbum = async (req: Request, res: Response) => {
     const { albumId } = req.params;
 
     try {
-        const songs = await mongoClient.song.findMany({
+        const songs = await prisma.song.findMany({
             where: {
                 Album: {
                     some: {
@@ -173,7 +174,7 @@ export const likeSong = async (req: Request, res: Response) => {
     const { songId, userId } = req.params;
 
     try {
-        const likedSong = await mongoClient.likedSong.create({
+        const likedSong = await prisma.likedSong.create({
             data: {
                 liked: true,
                 userId: userId,
@@ -189,7 +190,7 @@ export const likeSong = async (req: Request, res: Response) => {
 export const getAllLikedSongs = async (req: Request, res: Response) => {
 
     try {
-        const likedSongs = await mongoClient.likedSong.findMany({
+        const likedSongs = await prisma.likedSong.findMany({
             include: { User: true, Song: true }
         });
         res.status(200).json(likedSongs);
@@ -202,7 +203,7 @@ export const getLikedSongsByUserId = async (req: Request, res: Response) => {
     const { userId, songId } = req.params;
 
     try {
-        const likedSongs = await mongoClient.song.findMany({
+        const likedSongs = await prisma.song.findMany({
             where: {
                 LikedSong: {
                     some: {
@@ -226,7 +227,7 @@ export const unlikeSong = async (req: Request, res: Response) => {
     const { songId, userId } = req.params;
 
     try {
-        const likedSong = await mongoClient.likedSong.findFirst({
+        const likedSong = await prisma.likedSong.findFirst({
             where: {
                 userId: userId,
                 songId: songId,
@@ -236,7 +237,7 @@ export const unlikeSong = async (req: Request, res: Response) => {
         if (!likedSong) {
             return res.status(404).json({ error: 'Song not found.' });
         }
-        const unlikedSong = await mongoClient.likedSong.delete({
+        const unlikedSong = await prisma.likedSong.delete({
             where: {
                 id: likedSong.id
             }
@@ -252,7 +253,7 @@ export const updateSong = async (req: Request, res: Response) => {
     const { songId } = req.params
 
     try {
-        const updatedSong = await mongoClient.song.update({
+        const updatedSong = await prisma.song.update({
             where: { id: songId },
             data: { listened: listened }
         })
@@ -266,7 +267,7 @@ export const deleteSong = async (req: Request, res: Response) => {
     const { songId } = req.params
 
     try {
-        const deletedSong = await mongoClient.song.delete({
+        const deletedSong = await prisma.song.delete({
             where: { id: songId }
         });
         res.status(204).json(deletedSong);

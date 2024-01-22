@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
-import { mongoClient } from "../db/client";
+// import { mongoClient } from "../db/client";
+import prisma from "../db/client";
 
 export const createAlbum = async (req: Request, res: Response) => {
   const { name, cover } = req.body;
   const { artistId } = req.params;
 
   try {
-    const album = await mongoClient.albums.create({
+    const album = await prisma.albums.create({
       data: {
         name,
         cover,
@@ -27,7 +28,7 @@ export const createAlbum = async (req: Request, res: Response) => {
 
 export const getAllAlbums = async (req: Request, res: Response) => {
   try {
-    const albums = await mongoClient.albums.findMany({
+    const albums = await prisma.albums.findMany({
       orderBy: {
         name: "asc",
       },
@@ -47,7 +48,7 @@ export const getAlbumById = async (req: Request, res: Response) => {
   const { userId } = req.body;
 
   try {
-    const album = await mongoClient.albums.findUnique({
+    const album = await prisma.albums.findUnique({
       where: { id: albumId },
       include: {
         Song: true,
@@ -55,7 +56,7 @@ export const getAlbumById = async (req: Request, res: Response) => {
         LikedAlbums: true,
       },
     });
-    const isLiked = await mongoClient.likedAlbums.findFirst({
+    const isLiked = await prisma.likedAlbums.findFirst({
       where: {
         userId,
         albumId,
@@ -76,7 +77,7 @@ export const getAlbumByArtist = async (req: Request, res: Response) => {
   const { artistId } = req.params;
 
   try {
-    const albums = await mongoClient.albums.findMany({
+    const albums = await prisma.albums.findMany({
       where: {
         Artist: {
           some: {
@@ -99,7 +100,7 @@ export const likeAlbum = async (req: Request, res: Response) => {
   const { albumId, userId } = req.params;
 
   try {
-    const likedAlbum = await mongoClient.likedAlbums.create({
+    const likedAlbum = await prisma.likedAlbums.create({
       data: {
         liked: true,
         userId: userId,
@@ -116,7 +117,7 @@ export const unlikeAlbum = async (req: Request, res: Response) => {
   const { albumId, userId } = req.params;
 
   try {
-    const likedAlbum = await mongoClient.likedAlbums.findFirst({
+    const likedAlbum = await prisma.likedAlbums.findFirst({
       where: {
         userId: userId,
         albumId: albumId,
@@ -128,7 +129,7 @@ export const unlikeAlbum = async (req: Request, res: Response) => {
         .status(404)
         .json({ error: "No se encontró el álbum que le gusta al usuario" });
     }
-    const unlikedAlbum = await mongoClient.likedAlbums.delete({
+    const unlikedAlbum = await prisma.likedAlbums.delete({
       where: {
         id: likedAlbum.id,
       },
@@ -144,13 +145,13 @@ export const addSongToAlbum = async (req: Request, res: Response) => {
   const { songId } = req.params;
 
   try {
-    const album = await mongoClient.albums.findUnique({
+    const album = await prisma.albums.findUnique({
       where: { id: albumId },
     });
 
     album?.songId.push(songId);
 
-    const updatedAlbum = await mongoClient.albums.update({
+    const updatedAlbum = await prisma.albums.update({
       where: { id: albumId },
       data: {
         songId: album?.songId,
@@ -166,7 +167,7 @@ export const deleteAlbum = async (req: Request, res: Response) => {
   const { albumId } = req.params;
 
   try {
-    const deletedAlbum = await mongoClient.albums.delete({
+    const deletedAlbum = await prisma.albums.delete({
       where: { id: albumId },
     });
     res.status(201).json(deletedAlbum);
@@ -178,7 +179,7 @@ export const deleteAlbum = async (req: Request, res: Response) => {
 export const getLikedAlbumsByUserId = async (req: Request, res: Response) => {
   const { userId, albumId } = req.params;
   try {
-    const likedAlbums = await mongoClient.likedAlbums.findMany({
+    const likedAlbums = await prisma.likedAlbums.findMany({
       where: {
         userId: userId,
         albumId: albumId,
