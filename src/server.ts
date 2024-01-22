@@ -9,6 +9,7 @@ import playlistRoutes from './routes/playlist.routes';
 import albumRoutes from './routes/album.routes';
 import genreRoutes from './routes/genre.routes';
 import artistRoutes from './routes/artist.routes';
+import { Request, Response } from 'express';
 
 const app = express();
 app.use(express.json());
@@ -27,5 +28,9 @@ app.use("/album", albumRoutes);
 app.use("/genre", genreRoutes);
 app.use("/artist", artistRoutes);
 app.use("/cloudinary", cloudinaryRoutes);
+
+app.get("/", (req: Request, res: Response): void => {
+    res.status(200).json({ message: "This is working bro!" });
+});
 
 export default app
