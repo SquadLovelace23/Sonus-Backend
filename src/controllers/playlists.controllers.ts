@@ -1,13 +1,12 @@
 import { Request, Response } from 'express';
-// import { mongoClient } from '../db/client';
-import prisma from "../db/client";
+import { mongoClient } from '../db/client';
 
 export const createPlaylist = async (req: Request, res: Response) => {
     const { name, cover } = req.body;
     const { userId } = req.params;
 
     try {
-        const playlist = await prisma.playlist.create({
+        const playlist = await mongoClient.playlist.create({
             data: { name, userId, cover }
         });
 
@@ -19,7 +18,7 @@ export const createPlaylist = async (req: Request, res: Response) => {
 
 export const getAllPlaylists = async (req: Request, res: Response) => {
     try {
-        const allPlaylist = await prisma.playlist.findMany({
+        const allPlaylist = await mongoClient.playlist.findMany({
             include: {
                 Song: true
             }
@@ -34,7 +33,7 @@ export const getPlaylistsByUserId = async (req: Request, res: Response) => {
     const { userId } = req.params
     
     try{
-        const playlist = await prisma.playlist.findMany({
+        const playlist = await mongoClient.playlist.findMany({
             where: { userId: userId },
             include: {
                 Song: true,
@@ -52,7 +51,7 @@ export const updatePlaylist = async (req: Request, res: Response) => {
     const { name, songId, cover } = req.body
 
     try{
-        const updatePlaylist = await prisma.playlist.update({
+        const updatePlaylist = await mongoClient.playlist.update({
             where: { id: playlistId },
             data: { name, songId, cover }
         })
@@ -66,16 +65,16 @@ export const deletePlaylist = async (req: Request, res: Response) => {
     const { playlistId } = req.params;
 
     try {
-        const usersWithLikedPlaylist = await prisma.likedPlaylist.findMany({
+        const usersWithLikedPlaylist = await mongoClient.likedPlaylist.findMany({
             where: { playlistId: playlistId }
         });
-        const removePlaylistPromises = usersWithLikedPlaylist.map(async (likedPlaylist: { id: any; }) => {
-            await prisma.likedPlaylist.delete({
+        const removePlaylistPromises = usersWithLikedPlaylist.map(async (likedPlaylist) => {
+            await mongoClient.likedPlaylist.delete({
                 where: { id: likedPlaylist.id }
             });
         });
         await Promise.all(removePlaylistPromises);
-        const deletedPlaylist = await prisma.playlist.delete({
+        const deletedPlaylist = await mongoClient.playlist.delete({
             where: { id: playlistId }
         });
         res.status(200).json(deletedPlaylist);
@@ -88,7 +87,7 @@ export const likePlaylist = async (req: Request, res: Response) => {
     const { playlistId, userId } = req.params;
 
     try {
-        const likedPlaylist = await prisma.likedPlaylist.create({
+        const likedPlaylist = await mongoClient.likedPlaylist.create({
             data: {
                 liked: true,
                 userId: userId,
@@ -105,7 +104,7 @@ export const unlikePlaylist = async (req: Request, res: Response) => {
     const { playlistId, userId } = req.params;
 
     try {
-        const likedPlaylist = await prisma.likedPlaylist.findFirst({
+        const likedPlaylist = await mongoClient.likedPlaylist.findFirst({
             where: {
                 userId: userId,
                 playlistId: playlistId,
@@ -116,7 +115,7 @@ export const unlikePlaylist = async (req: Request, res: Response) => {
         if (!likedPlaylist) {
             return res.status(404).json({ error: 'Playlist not found.' });
         }
-        const unlikedPlaylist = await prisma.likedPlaylist.delete({
+        const unlikedPlaylist = await mongoClient.likedPlaylist.delete({
             where: {
                 id: likedPlaylist.id
             }
@@ -133,7 +132,7 @@ export const addSongToPlaylist = async (req: Request, res: Response) => {
     const { songId } = req.body;
 
     try {
-        const updatedPlaylist = await prisma.playlist.update({
+        const updatedPlaylist = await mongoClient.playlist.update({
             where: { id: playlistId },
             data: {
                 Song: { connect: { id: songId } },
@@ -150,7 +149,7 @@ export const getPlaylistById = async (req: Request, res: Response) => {
     const { userId } = req.body;
         
     try {
-        const playlist = await prisma.playlist.findUnique({
+        const playlist = await mongoClient.playlist.findUnique({
             where: {id: playlistId},
             include: {
                 Song: true,
@@ -163,7 +162,7 @@ export const getPlaylistById = async (req: Request, res: Response) => {
                 LikedPlaylist: true
             }
         });
-        const isLiked = await prisma.likedPlaylist.findFirst({
+        const isLiked = await mongoClient.likedPlaylist.findFirst({
             where: {
                 userId,
                 playlistId,
@@ -183,7 +182,7 @@ export const getPlaylistById = async (req: Request, res: Response) => {
 export const getLikedPlaylistsByUserId = async (req: Request, res: Response) => {
     const { userId, playlistId } = req.params;
     try {
-        const likedPlaylists = await prisma.likedPlaylist.findMany({
+        const likedPlaylists = await mongoClient.likedPlaylist.findMany({
             where: {
                 userId: userId,
                 playlistId: playlistId,
@@ -203,7 +202,7 @@ export const deleteSongFromPlaylist = async (req: Request, res: Response) => {
     const { playlistId, songId } = req.params
 
     try {
-        const updatedPlaylist = await prisma.playlist.update({
+        const updatedPlaylist = await mongoClient.playlist.update({
             where: { id: playlistId },
             data: {
                 Song: { 

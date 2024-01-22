@@ -1,12 +1,11 @@
 import { Request, Response } from 'express';
-// import { mongoClient } from '../db/client';
-import prisma from "../db/client";
+import { mongoClient } from '../db/client';
 
 export const createGenre = async (req: Request, res: Response) => {
     const { name } = req.body
 
     try{
-        const genre = await prisma.genres.create({
+        const genre = await mongoClient.genres.create({
             data: {
                 name: name
             }
@@ -21,7 +20,7 @@ export const deleteGenre = async (req: Request, res: Response) => {
     const { genreId } = req.params;
 
     try {
-        const deletedGenre = await prisma.genres.delete({
+        const deletedGenre = await mongoClient.genres.delete({
             where: { id: genreId }
         });
 
@@ -33,7 +32,7 @@ export const deleteGenre = async (req: Request, res: Response) => {
 
 export const getAllGenre = async (req: Request, res: Response) => {
     try{
-        const allGenre = await prisma.genres.findMany({
+        const allGenre = await mongoClient.genres.findMany({
             include: {
                 Song: true
             }
@@ -48,7 +47,7 @@ export const getGenreById = async (req: Request, res: Response) => {
     const { genreId } = req.params
     
     try{
-        const playlist = await prisma.genres.findUnique({
+        const playlist = await mongoClient.genres.findUnique({
             where: { id: genreId },
             include: {
                 Song: true

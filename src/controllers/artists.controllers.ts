@@ -1,13 +1,12 @@
 import { Request, Response } from 'express';
-// import { mongoClient } from '../db/client';
-import prisma from "../db/client";
+import { mongoClient } from '../db/client';
 
 export const createArtist = async (req: Request, res: Response) => {
     const { name, img, songId, albumsId, genresId } = req.body;
 
     try {
     
-        const newArtist = await prisma.artist.create({
+        const newArtist = await mongoClient.artist.create({
             data: {
                 name,
                 img,
@@ -25,7 +24,7 @@ export const createArtist = async (req: Request, res: Response) => {
 export const getAllArtists = async (req: Request, res: Response) => {
 
     try {
-        const allArtists = await prisma.artist.findMany({
+        const allArtists = await mongoClient.artist.findMany({
             include: {
                 Song:true,
                 Genres:true, 
@@ -44,7 +43,7 @@ export const getArtistById = async (req: Request, res: Response) => {
     const { artistId } = req.params
 
     try {
-        const artist = await prisma.artist.findUnique({ where: { id: artistId } })
+        const artist = await mongoClient.artist.findUnique({ where: { id: artistId } })
 
         res.status(200).json(artist)
 
@@ -61,7 +60,7 @@ export const deleteArtist = async (req: Request, res: Response) => {
     const { artistId } = req.params
 
     try {
-        const deleteUser = await prisma.artist.delete({
+        const deleteUser = await mongoClient.artist.delete({
             where: { id: artistId }
         });
         res.status(201).json(deleteUser);
