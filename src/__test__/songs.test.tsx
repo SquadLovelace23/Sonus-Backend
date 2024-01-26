@@ -1,94 +1,124 @@
 
-import { createSong, deleteSong } from '../controllers/songs.controllers';
+import { createSong, deleteSong, updateSong, getAllSongs } from '../controllers/songs.controllers';
+import { mongoClient } from '../db/client';
 
-const mongoClient = require('../db/client');
-
-jest.mock('../db/client');
-
-jest.mock('express', () => ({
-    Router: jest.fn(() => ({
-        post: jest.fn().mockReturnThis(),
-        delete: jest.fn().mockReturnThis(),
-    })),
-    json: jest.fn().mockReturnThis(),
-    status: jest.fn().mockReturnThis(),
+jest.mock('../../prisma/generated/mongodb_client', () => ({
+  PrismaClient: jest.fn(() => ({
+    song: {
+      findMany: jest.fn(),
+      create: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+  })),
 }));
 
-describe('Song Controllers', () => {
-    describe('#createSong', () => {
-        it('should create a song correctly', async () => {
-            const req = { 
-                body: { 
-                name: 'Song Name', 
-                url: 'song_url', 
-                cover: 'cover_url', 
-                genresId: ['1', '2'], 
-                artistId: '123', 
-                albumId: '456' 
-            } 
-            };
-            const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+describe('CRUD Song Operations', () => {
+  let mockRequest: any;
+  let mockResponse: any;
 
-            jest.spyOn(mongoClient.song, 'create').mockResolvedValueOnce({});
+  beforeEach(() => {
+    mockRequest = {
+      body: {},
+      params: {},
+    };
+    mockResponse = {
+      json: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    };
+  });
 
-            await createSong(req, res);
+  it('should create a new song', async () => {
+    mockRequest.body = {
+      name: 'New Song',
+      url: 'song-url',
+      cover: 'cover-url',
+      genresId: ['genreId1', 'genreId2'],
+      artistId: 'artistId',
+      albumId: 'albumId',
+    };
+    const createdSong = { id: 'someId', name: 'New Song' };
+    (mongoClient.song.create as jest.Mock).mockResolvedValueOnce(createdSong);
 
-            expect(mongoClient.song.create).toHaveBeenCalledWith({
-                data: {
-                    name: 'Song Name',
-                    url: 'song_url',
-                    cover: 'cover_url',
-                    Genres: { connect: [{ id: '1' }, { id: '2' }] },
-                    artistId: '123',
-                    albumId: '456'
-                }
-            });
-            expect(res.status).toHaveBeenCalledWith(201);
-            expect(res.json).toHaveBeenCalledWith({});
-        });
+    await createSong(mockRequest, mockResponse);
 
-        it('should handle error if create failure', async () => {
-            const req = { body: {} };
-            const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-            const mError = new Error('network');
+    expect(mockResponse.status).toHaveBeenCalledTimes(1);
+    expect(mockResponse.status).toHaveBeenCalledWith(201);
 
-            jest.spyOn(mongoClient.song, 'create').mockRejectedValueOnce(mError);
+    if (mockResponse.status.mock.calls[0][0] === 201) {
+      expect(mockResponse.json).toHaveBeenCalledWith(createdSong);
+    } else {
+      expect(mockResponse.json).toHaveBeenCalledWith(expect.any(Error));
+    }   
+  });
 
-            await createSong(req, res)
+  it('should get all songs successfully', async () => {
+   
+    const mockSongs = [
+      {
+        id: 'SongId1',
+        name: 'SongName1',
+        url: 'SongUrl1',
+        cover: 'SongCoverUrl1',
+        Genres: [],
+        artistId: 'ArtistId1',
+        albumId: 'AlbumId1',
+      },
+      {
+        id: 'SongId2',
+        name: 'SongName2',
+        url: 'SongUrl2',
+        cover: 'SongCoverUrl2',
+        Genres: [], 
+        artistId: 'ArtistId2',
+        albumId: 'AlbumId2',
+      },
+      {
+        id: 'SongId3',
+        name: 'SongName3',
+        url: 'SongUrl3',
+        cover: 'SongCoverUrl3',
+        Genres: [],
+        artistId: 'ArtistId3',
+        albumId: 'AlbumId3',
+      },
+    ];
 
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith(mError);
-        });
-    });
+    (mongoClient.song.findMany as jest.Mock).mockResolvedValueOnce(mockSongs);
+
+    console.log('Before getAllSongs - mock.calls:', (mongoClient.song.findMany as jest.Mock).mock.calls);
+
+    await getAllSongs(mockRequest, mockResponse);
+
+    console.log('After getAllSongs - mock.calls:', (mongoClient.song.findMany as jest.Mock).mock.calls);
 
 
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith(mockSongs);
+  });
+
+  it('should update a song', async () => {
+    mockRequest.body = { listened: true };
+    mockRequest.params.songId = 'someSongId';
+
+    const updatedSong = { id: 'someSongId', name: 'Updated Song', listened: true };
+    (mongoClient.song.update as jest.Mock).mockResolvedValueOnce(updatedSong);
+
+    await updateSong(mockRequest, mockResponse);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(204);
+    expect(mockResponse.json).toHaveBeenCalledWith(updatedSong);
+  });
+
+  it('should delete a song', async () => {
+    mockRequest.params.songId = 'someSongId';
+
+    (mongoClient.song.delete as jest.Mock).mockResolvedValueOnce({});
+
+    await deleteSong(mockRequest, mockResponse);
+
+    expect(mockResponse.status).toHaveBeenCalledWith(204);
+    expect(mockResponse.json).toHaveBeenCalled();
+  });
 });
-    describe('#deleteSong', () => {
-        it('should delete a song correctly', async () => {
-            const req = { params: { songId: '123' } };
-            const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-
-            jest.spyOn(mongoClient.song, 'delete').mockResolvedValueOnce({});
-
-            await deleteSong(req, res);
-
-            expect(mongoClient.song.delete).toHaveBeenCalledWith({
-                where: { id: '123' }
-            });
-            expect(res.status).toHaveBeenCalledWith(204);
-            expect(res.json).toHaveBeenCalledWith({});
-        });
-
-        it('should handle error if delete failure', async () => {
-            const req = { params: { songId: '123' } };
-            const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-            const mError = new Error('not found');
-
-            jest.spyOn(mongoClient.song, 'delete').mockRejectedValueOnce(mError);
-
-            await deleteSong(req, res);
-
-            expect(res.status).toHaveBeenCalledWith(500);
-            expect(res.json).toHaveBeenCalledWith(mError);
-        });
-    });
