@@ -208,7 +208,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Visual Studio\\sonus-backend\\prisma\\generated\\mongodb_client",
+      "value": "D:\\YANNDISCOS\\YANN\\Repositories\\SONUS\\Backend\\sonus-backend\\prisma\\generated\\mongodb_client",
       "fromEnvVar": null
     },
     "config": {
@@ -243,7 +243,7 @@ const config = {
     "db"
   ],
   "activeProvider": "mongodb",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
