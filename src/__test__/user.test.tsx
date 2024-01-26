@@ -1,9 +1,9 @@
 import { Request, Response } from "express"
 import { updateUser } from "../controllers/users.controllers"
 import { uploadImage } from '../helpers/cloudinary';
-import { v2 as cloudinary } from 'cloudinary';
 import { mongoClient } from '../db/client';
-
+import { uploadImageWithCloudinary } from "../controllers/cloudinary.controllers";
+import fs from 'fs-extra';
 
 jest.mock('../../prisma/generated/mongodb_client', () => ({
   PrismaClient: jest.fn(() => ({
@@ -13,11 +13,12 @@ jest.mock('../../prisma/generated/mongodb_client', () => ({
   })),
 }));
 
-jest.mock('cloudinary', () => ({
-  uploader: {
-    upload: jest.fn(),
-  },
-  config: jest.fn(),
+jest.mock('fs-extra', () => ({
+  unlink: jest.fn(),
+}));
+
+jest.mock('../helpers/cloudinary', () => ({
+  uploadImage: jest.fn(),
 }));
 
 describe('User update functionality', () => {
@@ -49,28 +50,37 @@ describe('User update functionality', () => {
             name: 'test',
             avatar: 'test.jpg',
         });
-        console.log('Test completed');
     });
 });
 
+describe('Image Upload with Cloudinary', () => {
+  it('should upload an image with Cloudinary and return the result', async () => {
+    const mockImage = {
+      tempFilePath: 'path/to/temp/image.jpg',
+    };
+    const mockUploadResult = {
+      url: 'http://example.com/image.jpg',
+    };
+    
+    (uploadImage as jest.Mock).mockResolvedValueOnce(mockUploadResult);
 
-describe('uploadImage', () => {
-    it('should upload the image and return the result', async () => {
-        const mockUploadResult = {
-            url: 'http://example.com/image.jpg',
-        };
-        (cloudinary.uploader.upload as jest.Mock).mockResolvedValue(mockUploadResult);
+    const mockReq = {
+      files: { image: mockImage },
+    } as unknown as Request;
 
-        const imagePath = 'path/to/image.jpg';
-        const result = await uploadImage(imagePath);
+    const mockRes = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    } as unknown as Response;
 
-        expect(cloudinary.uploader.upload).toHaveBeenCalledWith(imagePath, {
-            resource_type: "image",
-            folder: "images/",
-            crop: "scale",
-            overwrite: true,
-        });
+    await uploadImageWithCloudinary(mockReq, mockRes);
 
-        expect(result).toEqual(mockUploadResult);
+    expect(uploadImage).toHaveBeenCalledWith(mockImage.tempFilePath);
+    expect(fs.unlink).toHaveBeenCalledWith(mockImage.tempFilePath);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      message: 'Image uploaded successfully',
+      data: mockUploadResult,
     });
+  });
 });
