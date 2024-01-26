@@ -14,7 +14,7 @@ jest.mock('../../prisma/generated/mongodb_client', () => ({
   })),
 }));
 
-describe('CRUD Song Operations', () => {
+describe('CRUD Song Functionalities', () => {
   let mockRequest: any;
   let mockResponse: any;
 
