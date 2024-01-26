@@ -1,5 +1,5 @@
 
-import { createSong, deleteSong } from '../src/controllers/songs.controllers';
+import { createSong, deleteSong } from '../controllers/songs.controllers';
 
 const mongoClient = require('../db/client');
 
