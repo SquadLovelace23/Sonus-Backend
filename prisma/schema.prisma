@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  output        = "./generated/mongodb_client"
+  output        = "./generated"
   binaryTargets = ["native", "darwin-arm64", "debian-openssl-3.0.x"]
 }
 
