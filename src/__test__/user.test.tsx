@@ -23,7 +23,7 @@ jest.mock('../helpers/cloudinary', () => ({
 
 describe('User update functionality', () => {
     it('should update the user and return status 201', async () => {
-        (mongoClient.user.update as jest.Mock) .mockResolvedValue({
+        (mongoClient.user.update as jest.Mock).mockResolvedValue({
             id: '123',
             name: 'test',
             avatar: 'test.jpg',
