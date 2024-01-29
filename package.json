@@ -5,11 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "tsc -p . && npm run copy-prisma",
+    "build": "tsc -p .",
     "start": "node dist/index.js",
     "dev": "cross-env nodemon --watch \"src/**/*.ts\" --exec \"ts-node\" src/index.ts",
-    "postinstall": "prisma generate",
-    "copy-prisma": "ncp prisma dist/prisma"
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +25,6 @@
     "cross-env": "^7.0.3",
     "dotenv": "^16.3.1",
     "morgan": "^1.10.0",
-    "ncp": "^2.0.0",
     "nodemon": "^3.0.1",
     "prisma": "^5.8.1",
     "rimraf": "^5.0.5",
